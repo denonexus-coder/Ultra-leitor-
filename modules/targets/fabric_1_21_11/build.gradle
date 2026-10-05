@@ -88,8 +88,10 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:24.0.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 
-    zstdRuntime "com.github.luben:zstd-jni:${zstdVersion}"
-    testRuntimeOnly "com.github.luben:zstd-jni:${zstdVersion}"
+    // zstd-jni vem de libs/ (jar versionado no repo) com a lib nativa Android
+    // aarch64 ja embutida - nao ha download da Maven Central.
+    zstdRuntime files(rootProject.file("libs/zstd-jni-${zstdVersion}.jar"))
+    testRuntimeOnly files(rootProject.file("libs/zstd-jni-${zstdVersion}.jar"))
 
     brotliRuntime "com.aayushatharva.brotli4j:brotli4j:${brotliVersion}"
     brotliRuntime "com.aayushatharva.brotli4j:native-linux-x86_64:${brotliVersion}"
