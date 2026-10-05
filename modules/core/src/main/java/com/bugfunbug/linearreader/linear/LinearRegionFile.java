@@ -1272,28 +1272,43 @@ public class LinearRegionFile {
     }
 
     static EncodedLinearFile readEncodedLinearFile(Path src) throws IOException {
-        long fileSize = Files.size(src);
-        if (fileSize < 40L) {
-            throw new IOException("[LinearReader] File too short (" + fileSize + " bytes): " + src);
-        }
-        long compressedBodyLengthLong = fileSize - 40L;
-        if (compressedBodyLengthLong <= 0L || compressedBodyLengthLong > Integer.MAX_VALUE) {
-            throw new IOException("[LinearReader] Invalid compressed body length in: " + src);
-        }
-        int compressedBodyLength = (int) compressedBodyLengthLong;
-
         byte[] header = new byte[32];
-        byte[][] readBufs = TL_READ_BUFS.get();
-        if (readBufs[0] == null || readBufs[0].length < compressedBodyLength) {
-            readBufs[0] = new byte[compressedBodyLength];
-        }
-        byte[] compressedBody = readBufs[0];
         byte[] footer = new byte[8];
+        byte[] compressedBody;
+        int compressedBodyLength;
 
+        // Size and mapping must come from the same open file: `src` is replaced
+        // atomically by writeToDisk, so a size read on one inode followed by a
+        // map on the next could map past the new EOF, and reading a mapping past
+        // EOF raises SIGBUS instead of the IOException we want.
         try (FileChannel channel = FileChannel.open(src, StandardOpenOption.READ)) {
-            readFully(channel, ByteBuffer.wrap(header), src, "header");
-            readFully(channel, ByteBuffer.wrap(compressedBody, 0, compressedBodyLength), src, "compressed body");
-            readFully(channel, ByteBuffer.wrap(footer), src, "footer");
+            long fileSize = channel.size();
+            if (fileSize < 40L) {
+                throw new IOException("[LinearReader] File too short (" + fileSize + " bytes): " + src);
+            }
+            long compressedBodyLengthLong = fileSize - 40L;
+            if (compressedBodyLengthLong <= 0L || compressedBodyLengthLong > Integer.MAX_VALUE) {
+                throw new IOException("[LinearReader] Invalid compressed body length in: " + src);
+            }
+            compressedBodyLength = (int) compressedBodyLengthLong;
+
+            byte[][] readBufs = TL_READ_BUFS.get();
+            if (readBufs[0] == null || readBufs[0].length < compressedBodyLength) {
+                readBufs[0] = new byte[compressedBodyLength];
+            }
+            compressedBody = readBufs[0];
+
+            ByteBuffer mapped = mapIfPossible(channel, fileSize, src);
+            if (mapped != null) {
+                mapped.get(header, 0, header.length);
+                mapped.get(compressedBody, 0, compressedBodyLength);
+                mapped.get(footer, 0, footer.length);
+            } else {
+                channel.position(0L);
+                readFully(channel, ByteBuffer.wrap(header), src, "header");
+                readFully(channel, ByteBuffer.wrap(compressedBody, 0, compressedBodyLength), src, "compressed body");
+                readFully(channel, ByteBuffer.wrap(footer), src, "footer");
+            }
         }
 
         return new EncodedLinearFile(
@@ -1307,6 +1322,25 @@ public class LinearRegionFile {
                 compressedBody,
                 compressedBodyLength
         );
+    }
+
+    /**
+     * Maps the whole file so the region body is copied straight out of the page
+     * cache instead of being pulled through three separate read() syscalls.
+     *
+     * @return a buffer positioned at 0 holding the whole file, or {@code null}
+     *         when this filesystem cannot map the file and the caller must fall
+     *         back to {@link #readFully}.
+     */
+    private static ByteBuffer mapIfPossible(FileChannel channel, long fileSize, Path src) {
+        try {
+            return channel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);
+        } catch (IOException | UnsupportedOperationException | OutOfMemoryError e) {
+            LinearRuntime.LOGGER.warn(
+                    "[LinearReader] mmap unavailable for {} ({}), falling back to read().",
+                    src, e.toString());
+            return null;
+        }
     }
 
     private static void readFully(FileChannel channel, ByteBuffer buffer, Path src, String section) throws IOException {

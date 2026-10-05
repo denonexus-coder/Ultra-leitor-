@@ -34,7 +34,7 @@ public abstract class RegionFileStorageMixin {
     Path folder;
 
     @Shadow @Final
-    private boolean sync;
+    private boolean sync; // vanilla's fsync flag - intentionally NOT forwarded (see linearGetOrCreate)
 
     @Shadow @Final
     private Long2ObjectLinkedOpenHashMap<RegionFile> regionCache;
@@ -88,7 +88,10 @@ public abstract class RegionFileStorageMixin {
 
         Path linearPath = LinearRuntime.resolveLinearRegionPath(folder, pos);
         LinearRuntime.convertLegacyRegionIfNeeded(folder, pos);
-        LinearRegionFile region = new LinearRegionFile(linearPath, sync);
+        // dsync=false on purpose: the write path already goes .wip -> ATOMIC_MOVE,
+        // so an fsync here only stalls the flush barrier on flash. Vanilla's sync
+        // flag is deliberately not forwarded.
+        LinearRegionFile region = new LinearRegionFile(linearPath, false);
         linearCache.putAndMoveToFirst(key, region);
         return region;
     }

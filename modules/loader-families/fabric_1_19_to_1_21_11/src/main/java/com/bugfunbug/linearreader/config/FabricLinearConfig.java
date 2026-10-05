@@ -10,14 +10,14 @@ package com.bugfunbug.linearreader.config;
  */
 public class FabricLinearConfig {
 
-    /** Zstd level used for normal .linear writes. 4-6 is the usual sweet spot. */
-    public int compressionLevel = 4;
+    /** Zstd level used for normal .linear writes. 1 = fastest on mobile CPUs. */
+    public int compressionLevel = 1;
 
     /** Region files kept open in the cache. Higher is faster, lower uses less RAM. */
     public int regionCacheSize = 128;
 
     /** Keep a .linear.bak in a backups/ folder next to each region file. */
-    public boolean backupEnabled = true;
+    public boolean backupEnabled = false;
 
     /** Minimum unique chunk changes since the last completed backup before a refresh is allowed. */
     public int backupMinChangedChunks = 32;
@@ -50,7 +50,7 @@ public class FabricLinearConfig {
     public int diskSpaceWarnGb = 1;
 
     /** Enable automatic idle recompression after the server has been quiet for a while. */
-    public boolean autoRecompressEnabled = true;
+    public boolean autoRecompressEnabled = false;
 
     /** Minutes with no chunk I/O before automatic recompression may start. */
     public int idleThresholdMinutes = 20;

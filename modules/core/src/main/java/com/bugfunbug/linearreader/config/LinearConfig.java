@@ -22,9 +22,9 @@ public final class LinearConfig {
     // Live values — read by all mod code
     // -------------------------------------------------------------------------
 
-    private static volatile int     compressionLevel     = 4;
+    private static volatile int     compressionLevel     = 1;
     private static volatile int     regionCacheSize      = 256;
-    private static volatile boolean backupEnabled        = true;
+    private static volatile boolean backupEnabled        = false;
     private static volatile int     backupMinChangedChunks = 32;
     private static volatile int     backupMinChangedKb = 2048;
     private static volatile int     backupMaxAgeMinutes = 30;
@@ -35,7 +35,7 @@ public final class LinearConfig {
     private static volatile int     pressureFlushMaxDirtyRegions = 16;
     private static volatile int     slowIoThresholdMs    = 500;
     private static volatile int     diskSpaceWarnGb      = 1;
-    private static volatile boolean autoRecompressEnabled = true;
+    private static volatile boolean autoRecompressEnabled = false;
     private static volatile int     idleThresholdMinutes  = 20;
     private static volatile int     recompressMinFreeRamPercent = 15;
     private static volatile boolean bulkConvertOnLoad = true;
