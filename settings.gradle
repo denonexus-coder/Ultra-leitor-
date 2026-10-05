@@ -1,21 +1,8 @@
-import org.gradle.util.GradleVersion
-
 pluginManagement {
     repositories {
         maven {
-            name = "NeoForged"
-            url = "https://maven.neoforged.net/releases"
-        }
-        maven {
             name = "Fabric"
             url = "https://maven.fabricmc.net/"
-        }
-        maven {
-            name = "MinecraftForge"
-            url = "https://maven.minecraftforge.net/"
-        }
-        maven {
-            url = "https://maven.parchmentmc.org"
         }
         mavenCentral()
         gradlePluginPortal()
@@ -24,81 +11,17 @@ pluginManagement {
 
 rootProject.name = "LinearReader-workspace"
 
-def gradle9OrNewer = GradleVersion.current() >= GradleVersion.version("9.0")
-
 include(":targets")
 project(":targets").projectDir = file("modules/targets")
 
-if (gradle9OrNewer) {
-    include(":targets:fabric_26_1_to_26_2")
-    project(":targets:fabric_26_1_to_26_2").projectDir = file("modules/targets/fabric_26_1_to_26_2")
+include(":targets:fabric_1_21_11")
+project(":targets:fabric_1_21_11").projectDir = file("modules/targets/fabric_1_21_11")
 
-    include(":targets:fabric_26_3")
-    project(":targets:fabric_26_3").projectDir = file("modules/targets/fabric_26_3")
+include(":core")
+project(":core").projectDir = file("modules/core")
 
-    include(":targets:forge_26_1_to_26_2")
-    project(":targets:forge_26_1_to_26_2").projectDir = file("modules/targets/forge_26_1_to_26_2")
+include(":core-testkit")
+project(":core-testkit").projectDir = file("modules/core-testkit")
 
-    include(":targets:forge_26_3")
-    project(":targets:forge_26_3").projectDir = file("modules/targets/forge_26_3")
-
-    include(":targets:neoforge_26_1_to_26_2")
-    project(":targets:neoforge_26_1_to_26_2").projectDir = file("modules/targets/neoforge_26_1_to_26_2")
-
-    include(":targets:neoforge_26_3")
-    project(":targets:neoforge_26_3").projectDir = file("modules/targets/neoforge_26_3")
-} else {
-    include(":targets:fabric_1_20_to_1_20_1")
-    project(":targets:fabric_1_20_to_1_20_1").projectDir = file("modules/targets/fabric_1_20_to_1_20_1")
-
-    include(":targets:fabric_1_20_2_to_1_20_4")
-    project(":targets:fabric_1_20_2_to_1_20_4").projectDir = file("modules/targets/fabric_1_20_2_to_1_20_4")
-
-    include(":targets:fabric_1_20_5_to_1_21_4")
-    project(":targets:fabric_1_20_5_to_1_21_4").projectDir = file("modules/targets/fabric_1_20_5_to_1_21_4")
-
-    include(":targets:fabric_1_21_5_to_1_21_10")
-    project(":targets:fabric_1_21_5_to_1_21_10").projectDir = file("modules/targets/fabric_1_21_5_to_1_21_10")
-
-    include(":targets:fabric_1_21_11")
-    project(":targets:fabric_1_21_11").projectDir = file("modules/targets/fabric_1_21_11")
-
-    include(":targets:forge_1_20_to_1_20_1")
-    project(":targets:forge_1_20_to_1_20_1").projectDir = file("modules/targets/forge_1_20_to_1_20_1")
-
-    include(":targets:forge_1_20_2_to_1_20_4")
-    project(":targets:forge_1_20_2_to_1_20_4").projectDir = file("modules/targets/forge_1_20_2_to_1_20_4")
-
-    include(":targets:forge_1_20_6_to_1_21_4")
-    project(":targets:forge_1_20_6_to_1_21_4").projectDir = file("modules/targets/forge_1_20_6_to_1_21_4")
-
-    include(":targets:forge_1_21_5")
-    project(":targets:forge_1_21_5").projectDir = file("modules/targets/forge_1_21_5")
-
-    include(":targets:forge_1_21_6_to_1_21_10")
-    project(":targets:forge_1_21_6_to_1_21_10").projectDir = file("modules/targets/forge_1_21_6_to_1_21_10")
-
-    include(":targets:forge_1_21_11")
-    project(":targets:forge_1_21_11").projectDir = file("modules/targets/forge_1_21_11")
-
-    include(":targets:neoforge_1_20_2_to_1_20_4")
-    project(":targets:neoforge_1_20_2_to_1_20_4").projectDir = file("modules/targets/neoforge_1_20_2_to_1_20_4")
-
-    include(":targets:neoforge_1_20_5_to_1_21")
-    project(":targets:neoforge_1_20_5_to_1_21").projectDir = file("modules/targets/neoforge_1_20_5_to_1_21")
-
-    include(":targets:neoforge_1_21_1_to_1_21_4")
-    project(":targets:neoforge_1_21_1_to_1_21_4").projectDir = file("modules/targets/neoforge_1_21_1_to_1_21_4")
-
-    include(":targets:neoforge_1_21_5_to_1_21_7")
-    project(":targets:neoforge_1_21_5_to_1_21_7").projectDir = file("modules/targets/neoforge_1_21_5_to_1_21_7")
-
-    include(":targets:neoforge_1_21_8")
-    project(":targets:neoforge_1_21_8").projectDir = file("modules/targets/neoforge_1_21_8")
-
-    include(":targets:neoforge_1_21_9_to_1_21_10")
-    project(":targets:neoforge_1_21_9_to_1_21_10").projectDir = file("modules/targets/neoforge_1_21_9_to_1_21_10")
-
-    include(":targets:neoforge_1_21_11")
-    project(":targets:neoforge_1_21_11").projectDir = file("modules/targets/neoforge_1_21_11")
-}
+include(":minecraft-api")
+project(":minecraft-api").projectDir = file("modules/minecraft-api")
