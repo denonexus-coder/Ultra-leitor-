@@ -24,7 +24,7 @@ public final class LinearConfig {
 
     private static volatile int     compressionLevel     = 1;
     private static volatile int     regionCacheSize      = 256;
-    private static volatile boolean backupEnabled        = false;
+    private static volatile boolean backupEnabled        = true;
     private static volatile int     backupMinChangedChunks = 32;
     private static volatile int     backupMinChangedKb = 2048;
     private static volatile int     backupMaxAgeMinutes = 30;

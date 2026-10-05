@@ -17,7 +17,7 @@ public class FabricLinearConfig {
     public int regionCacheSize = 128;
 
     /** Keep a .linear.bak in a backups/ folder next to each region file. */
-    public boolean backupEnabled = false;
+    public boolean backupEnabled = true;
 
     /** Minimum unique chunk changes since the last completed backup before a refresh is allowed. */
     public int backupMinChangedChunks = 32;
