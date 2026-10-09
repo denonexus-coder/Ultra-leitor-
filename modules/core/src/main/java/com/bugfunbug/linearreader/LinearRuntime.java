@@ -276,8 +276,13 @@ public final class LinearRuntime {
             return;
         }
 
+        // Ultra-leitor: use every core (was availableProcessors() / 2 capped at 4).
+        // These barrier tasks are zstd-level-1 compression plus sequential file
+        // I/O per region — CPU-bound work that measured ~170 MB/s per core on the
+        // target SoC, so leaving half the cores idle doubled backup/conversion
+        // wall time for no benefit.
         int threadCount = Math.min(regions.size(),
-                Math.max(1, Math.min(Runtime.getRuntime().availableProcessors() / 2, 4)));
+                Math.max(1, Math.min(Runtime.getRuntime().availableProcessors(), 8)));
         if (threadCount <= 1) {
             IOException first = null;
             for (LinearRegionFile region : regions) {
@@ -344,7 +349,13 @@ public final class LinearRuntime {
         tickCounter = 0;
         serverStartNs = System.nanoTime();
         inFlightFlushes = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        final int threadCount = dedicatedServer ? 2 : 1;
+        // Ultra-leitor: 2 flush threads in every mode (integrated/client was 1).
+        // A flush is serialize-region (full memcpy) + zstd level 1 + write +
+        // optional fsync + atomic rename; with a single thread those stages never
+        // overlap between regions, so the dirty backlog grows during worldgen.
+        // Two threads keep a 4-core SoC busy while the priorities below still
+        // keep this work behind the game thread.
+        final int threadCount = 2;
         final int threadPriority = dedicatedServer ? Thread.NORM_PRIORITY - 1 : Thread.MIN_PRIORITY + 1;
         flushExecutor = Executors.newFixedThreadPool(threadCount, r -> {
             Thread t = new Thread(r, "linearreader-flush-" + FLUSH_THREAD_N.incrementAndGet());

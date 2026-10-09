@@ -1277,9 +1277,17 @@ public final class StoragePolicyManager {
                 LinearConfig.BROTLI.equalsIgnoreCase(LinearConfig.getIdleRecompressAlgorithm())
                         ? CompressionAlgorithm.Algorithm.BROTLI
                         : CompressionAlgorithm.Algorithm.ZSTD;
-        int targetLevelOrQuality = targetAlgorithm == CompressionAlgorithm.Algorithm.BROTLI
-                ? CompressionAlgorithm.BROTLI_QUALITY
-                : CompressionAlgorithm.ZSTD_LEVEL;
+        int targetLevelOrQuality;
+        if (targetAlgorithm == CompressionAlgorithm.Algorithm.BROTLI) {
+            targetLevelOrQuality = CompressionAlgorithm.BROTLI_QUALITY;
+        } else {
+            // Ultra-leitor: debt is measured against the fast live level
+            // (zstd 1), matching IdleRecompressor's automatic target. Measuring
+            // against Zstd 22 made every freshly-written region report maximum
+            // permanent debt, which kept the maintenance budget and pressure
+            // flush boost permanently hot for work that is never scheduled.
+            targetLevelOrQuality = Math.max(1, LinearConfig.getCompressionLevel());
+        }
 
         if (CompressionAlgorithm.isAlreadyAsGoodAs(current, targetAlgorithm, targetLevelOrQuality)) {
             return 0.0D;

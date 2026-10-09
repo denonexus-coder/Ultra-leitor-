@@ -674,6 +674,17 @@ public class LinearRegionFile {
 
         lock.writeLock().lock();
         try {
+            if (flushing) {
+                // Ultra-leitor: another thread is already serializing this region —
+                // the vanilla save barrier, a pressure/trickle flush from the
+                // executor, or an eviction flush can all reach this method for the
+                // same region at once now that flushes run on multiple threads.
+                // Two concurrent writeToDisk() calls would interleave into the
+                // same .wip file and publish a torn region through the atomic
+                // rename. Leave dirty=true; the next save/tick pass retries, so
+                // the write is deferred, never lost.
+                return;
+            }
             if (!dirty) return; // double-check after lock
             dataSnap = chunkData.clone();
             sizeSnap = chunkSizes.clone();
@@ -1105,9 +1116,15 @@ public class LinearRegionFile {
     }
 
     private static int resolveBackupTargetLevelOrQuality(CompressionAlgorithm.Algorithm algorithm) {
-        return algorithm == CompressionAlgorithm.Algorithm.BROTLI
-                ? CompressionAlgorithm.BROTLI_QUALITY
-                : CompressionAlgorithm.ZSTD_LEVEL;
+        if (algorithm == CompressionAlgorithm.Algorithm.BROTLI) {
+            return CompressionAlgorithm.BROTLI_QUALITY;
+        }
+        // Ultra-leitor: backups compress at the same fast live level (zstd 1 by
+        // default) instead of Zstd 22. Level 22 measured ~4 MB/s on the target
+        // SoC — a 100 MB dimension cost ~23 s of CPU per backup cycle on the
+        // single backup thread, stealing cores from chunk loading. Level 1
+        // keeps the same format/ratio class (~7x on NBT) at ~170 MB/s.
+        return Math.max(1, LinearConfig.getCompressionLevel());
     }
 
     private Path bakPath() {

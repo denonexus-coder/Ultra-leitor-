@@ -318,9 +318,22 @@ public final class IdleRecompressor {
         CompressionAlgorithm.Algorithm targetAlgorithm = manual
                 ? MANUAL_ALGORITHM
                 : algorithmFromConfigValue(LinearConfig.getIdleRecompressAlgorithm());
-        int targetLevelOrQuality = targetAlgorithm == CompressionAlgorithm.Algorithm.BROTLI
-                ? CompressionAlgorithm.BROTLI_QUALITY
-                : CompressionAlgorithm.ZSTD_LEVEL;
+        int targetLevelOrQuality;
+        if (targetAlgorithm == CompressionAlgorithm.Algorithm.BROTLI) {
+            targetLevelOrQuality = CompressionAlgorithm.BROTLI_QUALITY;
+        } else {
+            // Ultra-leitor: the AUTOMATIC idle pass targets the fast live level
+            // (zstd 1) instead of Zstd 22. Level 22 measured ~4.4 MB/s on the
+            // target SoC, so one quiet period was enough to burn a full core
+            // for minutes recompressing data that was already valid zstd at
+            // level 1. Files already at the live level now short-circuit on the
+            // header check in recompressFile() (no read, no decompress).
+            // A manual /linearreader afk-compress keeps the original
+            // max-ratio target — the user explicitly asked for that work.
+            targetLevelOrQuality = manual
+                    ? CompressionAlgorithm.ZSTD_LEVEL
+                    : Math.max(1, LinearConfig.getCompressionLevel());
+        }
         Path dimensionFilter = manual ? MANUAL_DIMENSION_FILTER : null;
         lastTargetDescription = targetAlgorithm == CompressionAlgorithm.Algorithm.BROTLI
                 ? ("brotli quality " + targetLevelOrQuality)
