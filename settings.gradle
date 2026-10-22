@@ -16,6 +16,8 @@ project(":targets").projectDir = file("modules/targets")
 
 include(":targets:fabric_1_21_11")
 project(":targets:fabric_1_21_11").projectDir = file("modules/targets/fabric_1_21_11")
+include(":targets:fabric_1_20_to_1_20_1")
+project(":targets:fabric_1_20_to_1_20_1").projectDir = file("modules/targets/fabric_1_20_to_1_20_1")
 
 include(":core")
 project(":core").projectDir = file("modules/core")
