@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  *   4. Zero allocations in the hot path.
  *   5. Never block the main thread.
  */
-public final class AIMemoryEngineV3 {
+public final class AIMemoryEngineV4 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("AI-Memory-V3");
 

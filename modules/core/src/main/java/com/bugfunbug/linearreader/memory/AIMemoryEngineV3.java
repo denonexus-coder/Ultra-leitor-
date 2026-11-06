@@ -4,6 +4,7 @@ import java.lang.management.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,6 @@ public final class AIMemoryEngineV3 {
     private static final LongAdder CACHE_MISSES      = new LongAdder();
     private static final LongAdder CACHE_REMOVED     = new LongAdder();
     private static final LongAdder CACHE_EVICTED_TTL = new LongAdder();
-    private static final LongAdder TEMP_REFS_RELEASED= new LongAdder();
 
     private static final AtomicDouble ALLOC_RATE_EWMA = new AtomicDouble(0.0);
     private static volatile long lastSampledAllocated = 0L;
@@ -163,7 +163,7 @@ public final class AIMemoryEngineV3 {
 
     @SuppressWarnings("unchecked")
     public static <T> ObjectPool<T> poolFor(Class<T> type, Supplier<T> factory) {
-        return POOLS.computeIfAbsent(type, k -> new ObjectPool<>(factory, MAX_POOL_SIZE));
+        return (ObjectPool<T>) POOLS.computeIfAbsent(type, k -> new ObjectPool<>(factory, MAX_POOL_SIZE));
     }
 
     // =====================================================================
