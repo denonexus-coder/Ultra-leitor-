@@ -5,6 +5,7 @@ import com.bugfunbug.linearreader.LinearStats;
 import com.bugfunbug.linearreader.StoragePolicyManager;
 import com.bugfunbug.linearreader.PlayerProximity;
 import com.bugfunbug.linearreader.config.LinearConfig;
+import com.bugfunbug.linearreader.memory.ChunkPrefetcher;
 import com.bugfunbug.linearreader.minecraftapi.ChunkPosCompat;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.ChunkPos;

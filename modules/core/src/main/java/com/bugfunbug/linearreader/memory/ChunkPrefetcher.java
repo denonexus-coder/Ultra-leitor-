@@ -30,7 +30,7 @@ public final class ChunkPrefetcher {
         });
 
     private static final BlockingQueue<Path> prefetchQueue = new LinkedBlockingQueue<>(MAX_PREFETCH_QUEUE);
-    private static final Set<Path> inFlight = new ConcurrentHashMap<>();
+    private static final Set<Path> inFlight = ConcurrentHashMap.newKeySet();
     private static final Map<Path, byte[]> prefetchCache = new ConcurrentHashMap<>();
     private static final int PREFETCH_CACHE_MAX = 200;
 
