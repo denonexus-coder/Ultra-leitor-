@@ -202,8 +202,20 @@ public class LinearRegionFile {
             }
             markAccessed();
             trimResidentDataCache(this);
+            // Pré-carrega regiões vizinhas para carregamento rápido quando o jogador se move
+            ChunkPrefetcher.prefetch(neighborRegion(normalizedPath, regionX - 1, regionZ));
+            ChunkPrefetcher.prefetch(neighborRegion(normalizedPath, regionX + 1, regionZ));
+            ChunkPrefetcher.prefetch(neighborRegion(normalizedPath, regionX, regionZ - 1));
+            ChunkPrefetcher.prefetch(neighborRegion(normalizedPath, regionX, regionZ + 1));
         }
     }
+
+    private static Path neighborRegion(Path regionPath, int x, int z) {
+        Path parent = regionPath.getParent();
+        if (parent == null) return null;
+        return parent.resolve("r." + x + "." + z + ".linear");
+    }
+
 
     // -------------------------------------------------------------------------
     // Public API

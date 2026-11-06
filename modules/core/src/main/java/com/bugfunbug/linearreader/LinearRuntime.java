@@ -7,6 +7,8 @@ import com.bugfunbug.linearreader.linear.LinearRegionFile;
 import com.bugfunbug.linearreader.linear.MCAConverter;
 import com.bugfunbug.linearreader.linear.BulkMcaConverter;
 import com.bugfunbug.linearreader.linear.ZstdSupport;
+import com.bugfunbug.linearreader.memory.AIMemoryEngineV3;
+import com.bugfunbug.linearreader.memory.ChunkPrefetcher;
 import com.bugfunbug.linearreader.minecraftapi.ChunkNbtAdapter;
 import com.bugfunbug.linearreader.minecraftapi.MinecraftFamily;
 import com.bugfunbug.linearreader.minecraftapi.WorldPathResolver;
@@ -520,6 +522,9 @@ public final class LinearRuntime {
         worldRoot = resolveWorldRoot(server);
         IdleRecompressor.startAutoDetector();
 
+        AIMemoryEngineV3.start();
+        ChunkPrefetcher.start();
+
         migrateLegacyBackups();
         loadPins();
         recoverStartupTempFiles();
@@ -534,6 +539,8 @@ public final class LinearRuntime {
         CURRENT_SERVER = null;
         PlayerProximity.clear();
         IdleRecompressor.shutdown();
+        ChunkPrefetcher.stop();
+        AIMemoryEngineV3.stop();
         savePins();
         DHPregenMonitor.notifyServerStopping();
 
