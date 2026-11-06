@@ -51,7 +51,10 @@ public final class ChunkPrefetcher {
                             synchronized (prefetchCache) {
                                 if (prefetchCache.size() >= PREFETCH_CACHE_MAX) {
                                     Iterator<Map.Entry<Path, byte[]>> it = prefetchCache.entrySet().iterator();
-                                    if (it.hasNext()) it.remove();
+                                    if (it.hasNext()) {
+                                        it.next();
+                                        it.remove();
+                                    }
                                 }
                                 prefetchCache.put(f, data);
                             }
