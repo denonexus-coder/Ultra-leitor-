@@ -283,17 +283,19 @@ public final class AIMemoryEngineV3 {
     public static byte[] cacheGet(long key) {
         synchronized (CACHE_LOCK) {
             CacheEntry e = DATA_CACHE.get(key);
-            if (e == null) return null;
+            if (e == null) {
+                CACHE_MISSES.increment();
+                return null;
+            }
             if (e.expired()) {
                 DATA_CACHE.remove(key);
                 CACHE_EVICTED_TTL.increment();
+                CACHE_MISSES.increment();
                 return null;
             }
             CACHE_HITS.increment();
             return e.data;
         }
-        CACHE_MISSES.increment();
-        return null;
     }
 
     private static void evictExpired() {
